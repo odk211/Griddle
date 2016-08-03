@@ -383,19 +383,11 @@ var Griddle = React.createClass({
             this.setPageSize(nextProps.resultsPerPage);
         }
         //This will updaet the column Metadata
-        this.columnSettings.columnMetadata = nextProps.columnMetadata;
-        if (nextProps.results.length > 0) {
-            var deepKeys = deep.keys(nextProps.results[0]);
-
-            var is_same = this.columnSettings.allColumns.length == deepKeys.length && this.columnSettings.allColumns.every(function (element, index) {
-                return element === deepKeys[index];
+        if (nextProps.columnMetadata !== this.columnSettings.columnMetadata) {
+            this.columnSettings.columnMetadata = nextProps.columnMetadata;
+            this.columnSettings.allColumns = nextProps.columnMetadata.map(function (meta, index) {
+                return meta.columnName;
             });
-
-            if (!is_same) {
-                this.columnSettings.allColumns = deepKeys;
-            }
-        } else if (this.columnSettings.allColumns.length > 0) {
-            this.columnSettings.allColumns = [];
         }
 
         if (nextProps.columns !== this.columnSettings.filteredColumns) {
@@ -430,8 +422,11 @@ var Griddle = React.createClass({
     componentWillMount: function componentWillMount() {
         this.verifyExternal();
         this.verifyCustom();
+        var allColumns = this.props.columnMetadata.map(function (meta, index) {
+            return meta.columnName;
+        });
 
-        this.columnSettings = new ColumnProperties(this.props.results.length > 0 ? deep.keys(this.props.results[0]) : [], this.props.columns, this.props.childrenColumnName, this.props.columnMetadata, this.props.metadataColumns);
+        this.columnSettings = new ColumnProperties(allColumns, this.props.columns, this.props.childrenColumnName, this.props.columnMetadata, this.props.metadataColumns);
 
         this.rowSettings = new RowProperties(this.props.rowMetadata, this.props.useCustomTableRowComponent && this.props.customTableRowComponent ? this.props.customTableRowComponent : GridRow, this.props.useCustomTableRowComponent);
 
@@ -878,8 +873,7 @@ var Griddle = React.createClass({
 
         var meta = this.columnSettings.getMetadataColumns();
 
-        // Grab the column keys from the first results
-        keys = deep.keys(omit(results[0], meta));
+        keys = this.columnSettings.allColumns;
 
         // sort keys by order
         keys = this.columnSettings.orderColumns(keys);
