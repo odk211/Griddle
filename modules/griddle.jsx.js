@@ -245,7 +245,7 @@ var Griddle = React.createClass({
 
         var that = this,
             updatedState = {
-            page: 0,
+            page: this.state.page,
             filter: filter
         };
 
